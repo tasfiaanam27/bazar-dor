@@ -146,5 +146,3 @@ Supported authentication methods include email/password, Google OAuth, and GitHu
 Bazar Dor aims to make grocery price information more accessible and understandable for users in Bangladesh. By presenting market prices, daily changes, and product comparisons in one place, the application helps users make more informed shopping decisions.
 
 
-
-Developed as part of **Programming Hero — Batch 14, Assignment 7**.
