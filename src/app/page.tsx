@@ -63,8 +63,10 @@ function PriceCard({ product }: { product: Product }) {
       className="flex min-h-[165px] flex-col justify-between rounded-2xl border border-[#E2EAE4] bg-white p-4 transition-all duration-200 hover:-translate-y-1 hover:border-[#008D43] hover:shadow-md"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F0F6F1] text-2xl">
-          {product.image || product.categoryIcon}
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F0F6F1] text-[26px] leading-none">
+          <span role="img" aria-label={product.nameBn}>
+            {product.image || product.categoryIcon}
+          </span>
         </div>
 
         <div className="min-w-0">
@@ -78,9 +80,7 @@ function PriceCard({ product }: { product: Product }) {
       </div>
 
       <div>
-        <p className="text-xs text-gray-500">
-          আজকের দাম
-        </p>
+        <p className="text-xs text-gray-500">আজকের দাম</p>
 
         <div className="mt-1 flex items-end justify-between gap-2">
           <p className="text-xl font-bold text-[#1E2921]">
@@ -129,6 +129,7 @@ function ProductSection({
         >
           {type === "up" ? "▲" : "▼"}
         </span>
+
         <h2 className="text-xl font-bold text-[#1E2921]">
           {title}
         </h2>
@@ -204,7 +205,6 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* Fruit Basket Illustration */}
           <div className="flex w-full shrink-0 items-center justify-center lg:w-[280px]">
             <svg
               viewBox="0 0 280 230"
@@ -230,7 +230,6 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Price Sections */}
         <ProductSection
           title="আজ দাম বেড়েছে"
           products={increased}
@@ -245,9 +244,14 @@ export default async function HomePage() {
 
         {/* All Products */}
         <section id="all-products" className="mt-12 scroll-mt-8">
-          <h2 className="mb-5 text-2xl font-bold text-[#1E2921]">
-            সকল পণ্যের বাজারদর
-          </h2>
+          <div className="mb-5">
+            <h2 className="text-xl font-bold text-[#1E2921]">
+              সব পণ্য
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              মোট {bnNumber(products.length)}টি পণ্য দেখানো হচ্ছে
+            </p>
+          </div>
 
           {products.length === 0 ? (
             <p className="rounded-xl bg-white p-6 text-gray-500">
@@ -265,4 +269,3 @@ export default async function HomePage() {
     </main>
   );
 }
-
