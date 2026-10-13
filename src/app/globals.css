@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f0f6f1;
+  --foreground: #1e2921;
+  --primary: #008d43;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  max-width: 100%;
 }
 
 body {
+  margin: 0;
+  min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+}
+
+@keyframes bazar-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.bazar-ticker-track {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  width: max-content !important;
+  animation: bazar-scroll 55s linear infinite !important;
+  will-change: transform;
+}
+
+.bazar-ticker-track:hover {
+  animation-play-state: paused !important;
+}
+
+.bazar-ticker-track > div {
+  flex-shrink: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .bazar-ticker-track {
+    animation-duration: 45s !important;
+  }
 }
