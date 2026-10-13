@@ -8,8 +8,8 @@ The platform provides information about daily price changes, product categories,
 
 ## 🚀 Live Website
 
-**Live Link:** Coming soon — Vercel deployment pending.
-**Github Link:** 
+**Live Link:** https://bazar-dor10.vercel.app
+**Github Link:** https://github.com/tasfiaanam27/bazar-dor
 
 ## ✨ Key Features
 
