@@ -28,7 +28,9 @@ export default function RootLayout({
       <body
         className={`${hindSiliguri.className} flex min-h-screen flex-col antialiased`}
       >
-        <Navbar />
+        <div className="sticky top-0 z-50 w-full">
+          <Navbar />
+        </div>
 
         <div className="flex-1">
           {children}
