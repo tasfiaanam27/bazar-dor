@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, UserRound } from "lucide-react";
+import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
 
 type Category = {
   id: string;
@@ -75,12 +77,16 @@ function getEnglishName(product: Product) {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { data: session, isPending } = authClient.useSession();
 
   const [isBangla, setIsBangla] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -116,6 +122,30 @@ export default function Navbar() {
     loadData();
   }, []);
 
+  async function handleLogout() {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
+    try {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error(error.message || "সাইন আউট করা যায়নি");
+        return;
+      }
+
+      setAccountOpen(false);
+      toast.success("সফলভাবে সাইন আউট হয়েছে");
+      router.push("/");
+      router.refresh();
+    } catch {
+      toast.error("সাইন আউট করতে সমস্যা হয়েছে");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   const date = new Date().toLocaleDateString(
     isBangla ? "bn-BD" : "en-US",
     {
@@ -129,16 +159,17 @@ export default function Navbar() {
 
   const tickerProducts = [...products, ...products];
 
-  const isCategoryActive = (slug: string) => {
+  function isCategoryActive(slug: string) {
     const href = `/category/${slug}`;
     return pathname === href || pathname.startsWith(`${href}/`);
-  };
+  }
 
   return (
     <header className="w-full bg-[#F8FBF9]">
       {/* Main Navbar */}
       <div className="border-b border-gray-200">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:py-5">
+          {/* Logo */}
           <Link href="/" className="flex min-w-0 items-center gap-3">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#008D43] text-2xl sm:h-14 sm:w-14">
               🛒
@@ -148,6 +179,7 @@ export default function Navbar() {
               <h1 className="text-xl font-bold leading-tight text-[#1E2921] sm:text-2xl lg:text-3xl">
                 {isBangla ? "বাজার দর" : "Market Price"}
               </h1>
+
               <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                 {date}
               </p>
@@ -157,68 +189,136 @@ export default function Navbar() {
           {/* Desktop Actions */}
           <div className="hidden items-center gap-5 md:flex">
             <button
+              type="button"
               onClick={() => setIsBangla(!isBangla)}
-              className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium"
+              className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-[#1E2921]"
             >
               {isBangla ? "English" : "বাংলা"}
             </button>
 
-            <Link href="/login" className="font-medium">
-              {isBangla ? "সাইন ইন" : "Sign in"}
-            </Link>
+            {isPending ? (
+              <div className="h-11 w-36 animate-pulse rounded-xl bg-gray-200" />
+            ) : session?.user ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="flex max-w-[220px] items-center gap-2 font-medium text-[#1E2921] hover:text-[#008D43]"
+                >
+                  <UserRound size={20} className="shrink-0" />
+                  <span className="truncate">{session.user.name}</span>
+                </Link>
 
-            <Link
-              href="/signup"
-              className="rounded-xl bg-[#008D43] px-6 py-3 font-semibold text-white hover:bg-[#007536]"
-            >
-              {isBangla ? "সাইন আপ" : "Sign up"}
-            </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="rounded-xl bg-[#008D43] px-5 py-3 font-semibold text-white hover:bg-[#007536] disabled:opacity-60"
+                >
+                  {loggingOut
+                    ? isBangla
+                      ? "অপেক্ষা করুন..."
+                      : "Please wait..."
+                    : isBangla
+                      ? "সাইন আউট"
+                      : "Sign out"}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/signin"
+                  className="font-medium text-[#1E2921] hover:text-[#008D43]"
+                >
+                  {isBangla ? "সাইন ইন" : "Sign in"}
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className="rounded-xl bg-[#008D43] px-6 py-3 font-semibold text-white hover:bg-[#007536]"
+                >
+                  {isBangla ? "সাইন আপ" : "Sign up"}
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Actions */}
           <div className="flex shrink-0 items-center gap-2 md:hidden">
             <button
+              type="button"
               onClick={() => setIsBangla(!isBangla)}
-              className="rounded-lg border border-gray-200 px-2 py-2 text-xs"
+              className="rounded-lg border border-gray-200 px-2 py-2 text-xs text-[#1E2921]"
             >
               {isBangla ? "EN" : "বাং"}
             </button>
 
+            {/* Mobile Account Menu */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => setAccountOpen(!accountOpen)}
                 aria-label="Account"
-                className="rounded-lg border border-gray-200 p-2"
+                aria-expanded={accountOpen}
+                className="rounded-lg border border-gray-200 p-2 text-[#1E2921]"
               >
                 <UserRound size={21} />
               </button>
 
               {accountOpen && (
-                <div className="absolute right-0 top-12 z-50 w-36 rounded-xl border bg-white p-2 shadow-lg">
-                  <Link
-                    href="/login"
-                    onClick={() => setAccountOpen(false)}
-                    className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-                  >
-                    {isBangla ? "সাইন ইন" : "Sign in"}
-                  </Link>
+                <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                  {isPending ? (
+                    <p className="px-3 py-2 text-sm text-gray-500">
+                      {isBangla ? "লোড হচ্ছে..." : "Loading..."}
+                    </p>
+                  ) : session?.user ? (
+                    <>
+                      <Link
+                        href="/profile"
+                        onClick={() => setAccountOpen(false)}
+                        className="block rounded-lg px-3 py-2 font-medium text-[#1E2921] hover:bg-gray-100"
+                      >
+                        {session.user.name}
+                      </Link>
 
-                  <Link
-                    href="/signup"
-                    onClick={() => setAccountOpen(false)}
-                    className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-                  >
-                    {isBangla ? "সাইন আপ" : "Sign up"}
-                  </Link>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                        className="w-full rounded-lg px-3 py-2 text-left text-red-600 hover:bg-gray-100 disabled:opacity-60"
+                      >
+                        {isBangla ? "সাইন আউট" : "Sign out"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/signin"
+                        onClick={() => setAccountOpen(false)}
+                        className="block rounded-lg px-3 py-2 text-[#1E2921] hover:bg-gray-100"
+                      >
+                        {isBangla ? "সাইন ইন" : "Sign in"}
+                      </Link>
+
+                      <Link
+                        href="/signup"
+                        onClick={() => setAccountOpen(false)}
+                        className="block rounded-lg px-3 py-2 text-[#1E2921] hover:bg-gray-100"
+                      >
+                        {isBangla ? "সাইন আপ" : "Sign up"}
+                      </Link>
+                    </>
+                  )}
                 </div>
               )}
             </div>
 
+            {/* Mobile Category Toggle */}
             <button
+              type="button"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle categories"
               aria-expanded={menuOpen}
-              className="rounded-lg border border-gray-200 p-2"
+              className="rounded-lg border border-gray-200 p-2 text-[#1E2921]"
             >
               {menuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -244,6 +344,7 @@ export default function Navbar() {
                 }`}
               >
                 <span className="text-xl">{category.icon}</span>
+
                 <span>
                   {isBangla
                     ? category.nameBn
@@ -275,6 +376,7 @@ export default function Navbar() {
                   }`}
                 >
                   <span className="text-lg">{category.icon}</span>
+
                   <span>
                     {isBangla
                       ? category.nameBn
@@ -339,3 +441,4 @@ export default function Navbar() {
     </header>
   );
 }
+

@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import type { Metadata } from "next";
 import { Hind_Siliguri } from "next/font/google";
 
@@ -35,6 +36,8 @@ export default function RootLayout({
         <div className="flex-1">
           {children}
         </div>
+
+        <Toaster position="top-right" />
 
         <Footer />
       </body>
