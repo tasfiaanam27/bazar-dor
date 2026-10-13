@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X, UserRound, ChevronDown } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, X, UserRound } from "lucide-react";
 
 type Category = {
   id: string;
@@ -73,6 +74,8 @@ function getEnglishName(product: Product) {
 }
 
 export default function Navbar() {
+  const pathname = usePathname();
+
   const [isBangla, setIsBangla] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -125,6 +128,11 @@ export default function Navbar() {
   );
 
   const tickerProducts = [...products, ...products];
+
+  const isCategoryActive = (slug: string) => {
+    const href = `/category/${slug}`;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <header className="w-full bg-[#F8FBF9]">
@@ -189,12 +197,15 @@ export default function Navbar() {
                 <div className="absolute right-0 top-12 z-50 w-36 rounded-xl border bg-white p-2 shadow-lg">
                   <Link
                     href="/login"
+                    onClick={() => setAccountOpen(false)}
                     className="block rounded-lg px-3 py-2 hover:bg-gray-100"
                   >
                     {isBangla ? "সাইন ইন" : "Sign in"}
                   </Link>
+
                   <Link
                     href="/signup"
+                    onClick={() => setAccountOpen(false)}
                     className="block rounded-lg px-3 py-2 hover:bg-gray-100"
                   >
                     {isBangla ? "সাইন আপ" : "Sign up"}
@@ -218,20 +229,29 @@ export default function Navbar() {
       {/* Desktop Categories */}
       <nav className="hidden border-b border-gray-200 md:block">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-7 gap-y-3 px-6 py-4">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/category/${category.slug}`}
-              className="flex items-center gap-2 whitespace-nowrap font-medium hover:text-[#008D43]"
-            >
-              <span className="text-xl">{category.icon}</span>
-              <span>
-                {isBangla
-                  ? category.nameBn
-                  : englishCategories[category.slug] ?? category.slug}
-              </span>
-            </Link>
-          ))}
+          {categories.map((category) => {
+            const active = isCategoryActive(category.slug);
+
+            return (
+              <Link
+                key={category.id}
+                href={`/category/${category.slug}`}
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-2 py-1 font-medium transition-colors ${
+                  active
+                    ? "bg-[#008D43] text-white"
+                    : "text-[#1E2921] hover:text-[#008D43]"
+                }`}
+              >
+                <span className="text-xl">{category.icon}</span>
+                <span>
+                  {isBangla
+                    ? category.nameBn
+                    : englishCategories[category.slug] ?? category.slug}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
 
@@ -239,26 +259,35 @@ export default function Navbar() {
       {menuOpen && (
         <nav className="border-b border-gray-200 bg-white md:hidden">
           <div className="grid grid-cols-2 gap-2 p-4">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/category/${category.slug}`}
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-2 rounded-lg bg-[#F0F6F1] px-3 py-3 text-sm font-medium"
-              >
-                <span className="text-lg">{category.icon}</span>
-                <span>
-                  {isBangla
-                    ? category.nameBn
-                    : englishCategories[category.slug] ?? category.slug}
-                </span>
-              </Link>
-            ))}
+            {categories.map((category) => {
+              const active = isCategoryActive(category.slug);
+
+              return (
+                <Link
+                  key={category.id}
+                  href={`/category/${category.slug}`}
+                  onClick={() => setMenuOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-[#008D43] text-white"
+                      : "bg-[#F0F6F1] text-[#1E2921]"
+                  }`}
+                >
+                  <span className="text-lg">{category.icon}</span>
+                  <span>
+                    {isBangla
+                      ? category.nameBn
+                      : englishCategories[category.slug] ?? category.slug}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </nav>
       )}
 
-      {/* Continuous Horizontal Price Ticker */}
+      {/* Continuous Horizontal Price Ticker — unchanged */}
       <div className="w-full overflow-hidden border-b border-gray-200 bg-white">
         <div className="bazar-ticker-track flex w-max flex-nowrap hover:[animation-play-state:paused]">
           {tickerProducts.map((product, index) => {
@@ -291,15 +320,15 @@ export default function Navbar() {
                     direction === "up"
                       ? "text-red-600"
                       : direction === "down"
-                      ? "text-green-600"
-                      : "text-gray-500"
+                        ? "text-green-600"
+                        : "text-gray-500"
                   }`}
                 >
                   {direction === "up"
                     ? "▲"
                     : direction === "down"
-                    ? "▼"
-                    : "—"}{" "}
+                      ? "▼"
+                      : "—"}{" "}
                   {formatNumber(percent, isBangla)}%
                 </span>
               </div>
