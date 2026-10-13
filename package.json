@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node --require ./dns-setup.cjs ./node_modules/next/dist/bin/next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node --require ./dns-setup.cjs ./node_modules/next/dist/bin/next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@better-auth/mongo-adapter": "^1.7.7",
     "better-auth": "^1.7.7",
-    "better-sqlite3": "^13.0.3",
     "lucide-react": "^1.56.0",
+    "mongodb": "^7.7.0",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -19,7 +20,6 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
-    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

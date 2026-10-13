@@ -9,10 +9,13 @@ import { authClient } from "@/lib/auth-client";
 
 export default function UpdateProfilePage() {
   const router = useRouter();
+
   const { data: session, isPending, refetch } =
     authClient.useSession();
 
   const [name, setName] = useState("");
+  const [initializedUserId, setInitializedUserId] =
+    useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -22,10 +25,14 @@ export default function UpdateProfilePage() {
   }, [isPending, session?.user, router]);
 
   useEffect(() => {
-    if (session?.user?.name) {
-      setName(session.user.name);
+    if (
+      session?.user &&
+      initializedUserId !== session.user.id
+    ) {
+      setName(session.user.name || "");
+      setInitializedUserId(session.user.id);
     }
-  }, [session?.user?.name]);
+  }, [session?.user, initializedUserId]);
 
   async function handleUpdate(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,6 +41,11 @@ export default function UpdateProfilePage() {
 
     if (!updatedName) {
       toast.error("আপনার নাম লিখুন");
+      return;
+    }
+
+    if (updatedName === session?.user?.name) {
+      toast("নাম পরিবর্তন করা হয়নি");
       return;
     }
 
@@ -52,6 +64,7 @@ export default function UpdateProfilePage() {
       await refetch();
 
       toast.success("তথ্য সফলভাবে আপডেট হয়েছে");
+
       router.push("/profile");
       router.refresh();
     } catch {
@@ -95,12 +108,14 @@ export default function UpdateProfilePage() {
 
             <input
               id="name"
+              name="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full rounded-lg border border-[#DCE5DF] bg-white px-4 py-3 text-[#1E2921] outline-none focus:border-[#008D43]"
+              autoComplete="name"
               placeholder="আপনার নাম লিখুন"
+              className="relative z-50 w-full rounded-lg border border-[#DCE5DF] bg-white px-4 py-3 text-[#1E2921] outline-none focus:border-[#008D43]"
             />
 
             <button
@@ -108,7 +123,9 @@ export default function UpdateProfilePage() {
               disabled={saving}
               className="mt-5 w-full rounded-lg bg-[#008D43] px-5 py-3 font-semibold text-white transition hover:bg-[#007536] disabled:opacity-60"
             >
-              {saving ? "আপডেট হচ্ছে..." : "তথ্য আপডেট করুন"}
+              {saving
+                ? "আপডেট হচ্ছে..."
+                : "তথ্য আপডেট করুন"}
             </button>
           </form>
 
@@ -123,3 +140,4 @@ export default function UpdateProfilePage() {
     </main>
   );
 }
+
