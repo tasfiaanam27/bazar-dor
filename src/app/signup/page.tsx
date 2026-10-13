@@ -63,9 +63,32 @@ export default function SignUpPage() {
         return;
       }
 
-      toast.success("অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে");
+      // Better Auth normally signs in the user after registration.
+      // Sign out so they can log in from the Sign In page.
+      const { error: signOutError } =
+        await authClient.signOut();
 
-      router.replace(getDestination());
+      if (signOutError) {
+        toast.error(
+          signOutError.message ||
+            "অ্যাকাউন্ট তৈরি হয়েছে, কিন্তু সাইন আউট করা যায়নি"
+        );
+        return;
+      }
+
+      toast.success(
+        "অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! এখন সাইন ইন করুন।"
+      );
+
+      // Redirect to Sign In, as required by the assignment.
+      const destination = getDestination();
+
+      const signInUrl =
+        destination === "/"
+          ? "/signin"
+          : `/signin?redirect=${encodeURIComponent(destination)}`;
+
+      router.replace(signInUrl);
       router.refresh();
     } catch {
       toast.error("অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে");
@@ -103,7 +126,6 @@ export default function SignUpPage() {
   return (
     <main className="min-h-[70vh] bg-[#F0F6F1] px-4 py-14 sm:py-16">
       <div className="mx-auto w-full max-w-[460px]">
-
         {/* Heading outside the card */}
         <div className="mb-7 text-center">
           <h1 className="text-3xl font-bold text-[#1E2921]">
@@ -117,7 +139,6 @@ export default function SignUpPage() {
 
         {/* White registration card */}
         <div className="rounded-2xl border border-[#E2EAE4] bg-white p-6 shadow-sm sm:p-9">
-
           <form
             onSubmit={handleSignUp}
             className="flex flex-col gap-5"
@@ -227,15 +248,16 @@ export default function SignUpPage() {
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-[#E2EAE4]" />
+
             <span className="text-sm text-[#758078]">
               অথবা
             </span>
+
             <div className="h-px flex-1 bg-[#E2EAE4]" />
           </div>
 
-          {/* Google and GitHub buttons */}
+          {/* Google and GitHub buttons - horizontal */}
           <div className="grid w-full grid-cols-2 gap-3">
-
             {/* Google */}
             <button
               type="button"
